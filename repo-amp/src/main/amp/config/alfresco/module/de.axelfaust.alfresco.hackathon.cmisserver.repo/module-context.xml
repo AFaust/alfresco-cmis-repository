@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- TODO raise bug with Alfresco for OwnableService (core service) requiring RenditionService (higher level service) -->
+    <!-- TODO also raise bug for initialization disruption rendition service may introduce via use of ServiceRegistry -->
+    <!-- We were forced to create a custom no-op impl to workaround issues -->
+    <bean id="renditionService" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.service.NOOPRenditionServiceImpl">
+        <property name="nodeService" ref="NodeService" />
+    </bean>
+
+    <!-- TODO raise bug with Alfresco for ContentService having a hard dependency on a subsystem that may not be started (better the subsystem register itself with ContentService) -->
+    <!-- Note it is not enough to "disable" the subsystem because it would be auto-started on first call - so replace selector with no-op -->
+    <bean id="transformerSelector" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.transformer.NOOPTransformerSelector" />
+
+    <!-- transformer.ImageMagick is hard-required for ContentService -->
+    <!-- TODO raise a bug with Alfresco about this messed up dependency and public API exposure -->
+    <bean id="transformer.ImageMagick" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.transformer.NOOPContentTransformer" />
+
+    <!-- ContentService has dependency on transformerDebug which has no interface and thus can't be replaced with no-op - so we have to replace all the dependencies of that which we don't want -->
+    <bean id="transformerConfig" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.transformer.NOOPTransformerConfig" />
+    <!-- Should be simple enough beans but due to circular reference to transformerDebug we have to hack this -->
+    <bean id="transformerDebugLog" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="targetSource">
+            <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
+                <property name="targetBeanName">
+                    <idref bean="transformerDebugLogImpl" />
+                </property>
+            </bean>
+        </property>
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.apache.commons.logging.Log</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="transformerDebugLogImpl" class="org.alfresco.repo.content.transform.TransformerDebugLog">
+        <property name="transformerDebug" ref="transformerDebug" />
+        <property name="transformerConfig" ref="transformerConfig" />
+    </bean>
+    <bean id="transformerLog" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="targetSource">
+            <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
+                <property name="targetBeanName">
+                    <idref bean="transformerLogImpl" />
+                </property>
+            </bean>
+        </property>
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.apache.commons.logging.Log</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="transformerLogImpl" class="org.alfresco.repo.content.transform.TransformerLog">
+        <property name="transformerDebug" ref="transformerDebug" />
+        <property name="transformerConfig" ref="transformerConfig" />
+    </bean>
+
+    <!-- Most reductions are handled by custom overrides of application-context.xml and its subvariants, but some reductions are performed via Spring post processors based on configurable properties -->
+
+    <bean id="cmis-server-reduction-properties" parent="common-placeholder-configurer">
+        <property name="locations">
+            <list>
+                <value>classpath:alfresco/module/${project.artifactId}/cmis-server-reduction.properties</value>
+                <value>classpath:alfresco/cmis-server-reduction.properties</value>
+            </list>
+        </property>
+        <property name="properties" ref="global-properties" />
+        <property name="localOverride" value="false" />
+        <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_NEVER" />
+    </bean>
+
+    <bean id="${project.artifactId}-patchRemovalPostProcessor" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.beans.BeanDefinitionRemovingFactoryPostProcessor">
+        <property name="beanNamesToRemove" value="${hackathon.cmisserver.beanRemover.patches}" />
+    </bean>
+
+    <bean id="${project.artifactId}-workflowRemovalPostProcessor" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.beans.BeanDefinitionRemovingFactoryPostProcessor">
+        <property name="beanNamesToRemove" value="${hackathon.cmisserver.beanRemover.workflows}" />
+    </bean>
+
+    <bean id="${project.artifactId}-publicServiceRemovalPostProcessor" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.beans.BeanDefinitionRemovingFactoryPostProcessor">
+        <property name="beanNamesToRemove" value="${hackathon.cmisserver.beanRemover.publicServices}" />
+    </bean>
+
+    <bean id="${project.artifactId}-subsystemRemovalPostProcessor" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.beans.BeanDefinitionRemovingFactoryPostProcessor">
+        <property name="beanNamesToRemove" value="${hackathon.cmisserver.beanRemover.subsystems}" />
+    </bean>
+
+    <bean id="${project.artifactId}-transformerRemovalPostProcessor" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.beans.TransformerBeanRemovingFactoryPostProcessor">
+        <property name="excludeTransformerBeanNames">
+            <list>
+                <value>transformer.ImageMagick</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="${project.artifactId}-miscRemovalPostProcessor" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.beans.BeanDefinitionRemovingFactoryPostProcessor">
+        <property name="beanNamesToRemove" value="${hackathon.cmisserver.beanRemover.misc}" />
+    </bean>
+
+</beans>

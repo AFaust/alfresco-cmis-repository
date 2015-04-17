@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+    <!-- The beans in this configuration are necessary to remove any unwanted default beans that can not be dealt with properly via the properties in cmis-server-reduction.properties due to Spring initialization order -->
+
+    <bean id="${project.artifactId}-workflowRemovalBeanRegistryPostProcessor" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.beans.BeanDefinitionRemovingRegistryPostProcessor">
+        <property name="beanNamesToRemove">
+            <list>
+                <value>workflowScheduler</value>
+            </list>
+        </property>
+    </bean>
+
+</beans>

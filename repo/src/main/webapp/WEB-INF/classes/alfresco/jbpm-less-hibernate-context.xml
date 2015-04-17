@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <import resource="classpath:alfresco/hibernate-context.xml" />
+
+    <!-- override session factory to remove dependency on all the JBPM definition files -->
+    <!-- Hibernate itself may still be wired for transaction handling somewhere, so we don't remove it yet -->
+    <bean id="sessionFactoryBase" abstract="true">
+        <property name="schemaUpdate">
+            <value>false</value>
+        </property>
+        <property name="mappingResources">
+            <list>
+                <!-- empty list to remove all JBPM stuff -->
+            </list>
+        </property>
+        <property name="hibernateProperties" ref="hibernateConfigProperties" />
+        <property name="entityCacheStrategies">
+            <props>
+            </props>
+        </property>
+        <property name="collectionCacheStrategies">
+            <props>
+            </props>
+        </property>
+    </bean>
+</beans>
