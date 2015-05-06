@@ -5,4 +5,6 @@
     <!-- cleared out - file only exists to classpath-hide the one potentially in alfresco-repository.jar -->
     <!-- TODO Could be generated during build process based on POM config -->
 
+    <!-- TODO raise bug with Alfresco for dependency of normal web-scripts-application-context.xml onwebScriptAuthenticationListener -->
+    <bean id="webScriptAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener" />
 </beans>

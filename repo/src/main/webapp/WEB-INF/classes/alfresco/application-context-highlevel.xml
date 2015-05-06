@@ -5,6 +5,10 @@
 <beans>
     <import resource="classpath:alfresco/scheduled-jobs-context.xml" />
     
+    <!-- CMIS can't work without thumbnails which can't work without renditions -->
+    <import resource="classpath:alfresco/rendition-services-context.xml"/>
+    <import resource="classpath:alfresco/thumbnail-service-context.xml"/>
+    
     <import resource="classpath:alfresco/opencmis-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
 </beans>

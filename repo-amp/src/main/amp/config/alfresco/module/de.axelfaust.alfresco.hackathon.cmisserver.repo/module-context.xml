@@ -88,8 +88,9 @@
         <property name="beanNamesToRemove" value="${hackathon.cmisserver.beanRemover.subsystems}" />
     </bean>
 
-    <bean id="${project.artifactId}-transformerRemovalPostProcessor" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.beans.TransformerBeanRemovingFactoryPostProcessor">
-        <property name="excludeTransformerBeanNames">
+    <bean id="${project.artifactId}-transformerRemovalPostProcessor" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.beans.PatternBasedBeanRemovingFactoryPostProcessor">
+        <property name="beanNamePattern" value="^transformer\.(worker\.\w+|\w+)$" />
+        <property name="excludeBeanNames">
             <list>
                 <value>transformer.ImageMagick</value>
             </list>
@@ -98,6 +99,26 @@
 
     <bean id="${project.artifactId}-miscRemovalPostProcessor" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.beans.BeanDefinitionRemovingFactoryPostProcessor">
         <property name="beanNamesToRemove" value="${hackathon.cmisserver.beanRemover.misc}" />
+    </bean>
+    
+    <bean id="${project.artifactId}-nonSolrWebScriptRemovalPostProcessor" class="de.axelfaust.alfresco.hackathon.cmisserver.repo.beans.PatternBasedBeanRemovingFactoryPostProcessor">
+        <property name="beanNamePattern" value="^webscript(\.[^\.]+)+\.(get|post|delete|put)$" />
+        <property name="excludeBeanNames">
+            <list>
+                <value>webscript.org.alfresco.repository.solr.aclChangeSets.get</value>
+                <value>webscript.org.alfresco.repository.solr.acls.post</value>
+                <value>webscript.org.alfresco.repository.solr.acls.get</value>
+                <value>webscript.org.alfresco.repository.solr.aclsReaders.post</value>
+                <value>webscript.org.alfresco.repository.solr.aclsReaders.get</value>
+                <value>webscript.org.alfresco.repository.solr.transactions.get</value>
+                <value>webscript.org.alfresco.repository.solr.stats.get</value>
+                <value>webscript.org.alfresco.repository.solr.nodes.post</value>
+                <value>webscript.org.alfresco.repository.solr.nodesMetaData.post</value>
+                <value>webscript.org.alfresco.repository.solr.nodeContent.get</value>
+                <value>webscript.org.alfresco.repository.solr.model.get</value>
+                <value>webscript.org.alfresco.repository.solr.modelsdiff.post</value>
+            </list>
+        </property>
     </bean>
 
 </beans>

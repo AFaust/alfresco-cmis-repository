@@ -24,19 +24,34 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 
 /**
- *
- * @author Axel Faust
+ * @author Axel Faust, <a href="http://www.prodyna.com">PRODYNA AG</a>
  */
-public class TransformerBeanRemovingFactoryPostProcessor implements BeanDefinitionRegistryPostProcessor
+public class PatternBasedBeanRemovingFactoryPostProcessor implements BeanDefinitionRegistryPostProcessor
 {
 
-    protected List<String> excludeTransformerBeanNames = Collections.emptyList();
+    protected List<String> excludeBeanNames = Collections.emptyList();
 
-    public void setExcludeTransformerBeanNames(final List<String> excludeTransformerBeanNames)
+    protected String beanNamePattern;
+
+    /**
+     *
+     * @param excludeBeanNames
+     *            the excludeBeanNames to set
+     */
+    public void setExcludeBeanNames(final List<String> excludeBeanNames)
     {
-        ParameterCheck.mandatoryCollection("excludeTransformerBeanNames", excludeTransformerBeanNames);
+        ParameterCheck.mandatoryCollection("excludeBeanNames", excludeBeanNames);
 
-        this.excludeTransformerBeanNames = new ArrayList<String>(excludeTransformerBeanNames);
+        this.excludeBeanNames = new ArrayList<String>(excludeBeanNames);
+    }
+
+    /**
+     * @param beanNamePattern
+     *            the beanNamePattern to set
+     */
+    public void setBeanNamePattern(final String beanNamePattern)
+    {
+        this.beanNamePattern = beanNamePattern;
     }
 
     /**
@@ -47,7 +62,7 @@ public class TransformerBeanRemovingFactoryPostProcessor implements BeanDefiniti
     {
         for (final String beanName : registry.getBeanDefinitionNames())
         {
-            if (beanName.matches("^transformer\\.(worker\\.\\w+|\\w+)$") && !this.excludeTransformerBeanNames.contains(beanName))
+            if (beanName.matches(this.beanNamePattern) && !this.excludeBeanNames.contains(beanName))
             {
                 registry.removeBeanDefinition(beanName);
             }
@@ -55,7 +70,6 @@ public class TransformerBeanRemovingFactoryPostProcessor implements BeanDefiniti
     }
 
     /**
-     *
      * {@inheritDoc}
      */
     @Override

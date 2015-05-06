@@ -80,10 +80,10 @@
     </profiles>
   <modules>
     <module>repo-amp</module>
-    <module>share-amp</module>
+    <!-- <module>share-amp</module> -->
     <module>repo</module>
     <module>solr</module>
-    <module>share</module>
+    <!-- <module>share</module> -->
     <module>runner</module>
   </modules>
 </project>
